@@ -8,7 +8,7 @@ from threading import Thread
 from serial import *
 
 port_arduino = 'COM3' #name of serial port
-port_loadcell = 'COM8'
+port_loadcell = 'COM7'
 # stream of data from singletact is ordered by addresses. This variable maps the 
 # output from the single tact to the physical locations
 map_sensors = [0,1,2,3,4,5,10,6,7,11,13,9,8,12]
@@ -246,7 +246,7 @@ def creatingscframe(): #sensor calibration window
         if abs(value) > sensor_red[index]:
             color = '#C82538' #red
         elif abs(value) > sensor_yellow[index]:
-            colar = '#E6CC00' #yellow
+            color = '#E6CC00' #yellow
         else: 
             color = '#2E7F18' #green
                 
@@ -355,7 +355,7 @@ def datacollection(): #data collection function
                 window.update()
                 elapsedTime = int((time.perf_counter() - (trialStartTime))*(10**3))/(10**3)
                 file = open(FILENAME,"a")
-                file.write(str(elapsedTime) + ',' + last_received + '\n')
+                file.write(str(elapsedTime) + ',' + last_received )
                 file.close()
                 elapsed_label.config(text = str(elapsedTime))
                 sampleStartTime = time.perf_counter()
@@ -427,7 +427,8 @@ def datacollection(): #data collection function
         datareview() #calling DR function'''
  
     def exit_command():
-        window.destroy()  
+        window.destroy()
+        quit()  
     
     
     
