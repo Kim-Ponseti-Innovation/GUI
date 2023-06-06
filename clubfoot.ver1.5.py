@@ -60,7 +60,7 @@ numberTrialEntry = 0
 lengthTrialEntry = 0
 sampleRateEntry = 0
         
-window= tk.Tk() #creating window
+window = tk.Tk() #creating window
 window.title("Club Foot Data Collection") #titling window
 window.geometry("800x480")
 FILENAME = ''
@@ -257,7 +257,7 @@ def creatingscframe(): #sensor calibration window
         number_list = last_received.split(",") # creates a list of number from csv line
         del number_list[0] # deletes the leading 0 from the loadcell
         for idx in range(14):
-            sensorValue = int(number_list[map_sensors[idx]]) - tare[idx]
+            sensorValue = float(number_list[map_sensors[idx]]) - tare[idx]
             addSpace = 5 - len(str(sensorValue))
             label[idx].config(text = " "*addSpace + str(sensorValue))
             label[idx].config(font = "Courier", bg = backColor(sensorValue,idx))
@@ -286,7 +286,7 @@ def creatingscframe(): #sensor calibration window
     def calibrate(): # NEED TO FIX THIS!! 5/3/23
         global tare
         tare = last_received.split(",")
-        tare = list(map(int, tare))
+        tare = list(map(float, tare))
         
 
         
@@ -430,9 +430,7 @@ def datacollection(): #data collection function
         window.destroy()
         quit()  
     
-    
-    
-    
+
     dataframe = tk.Frame(window, relief = tk.RAISED, borderwidth = 7) #master frame for dc
     
     dataframe_title = tk.Button(master = dataframe, text = "Data Collection", height = 2, width = 20) #titling frame
@@ -505,7 +503,6 @@ lc,ard = serialSetup()
 Thread(target=receiving, args=(ard,lc,)).start() # start reading from serial. Should make this part of an initialization function?
 
 frame1() #calling first function/frame
-
 window.mainloop() #finishing loop
 
 
