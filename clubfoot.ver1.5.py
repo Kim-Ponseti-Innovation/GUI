@@ -283,7 +283,7 @@ def creatingscframe(): #sensor calibration window
         
         datacollection()
         
-    def calibrate(): # NEED TO FIX THIS!! 5/3/23
+    def calibrate():
         global tare
         tare = last_received.split(",")
         tare = list(map(float, tare))
