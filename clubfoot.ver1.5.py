@@ -71,6 +71,7 @@ window.geometry("800x480")
 FILENAME = ''
 last_received = ''
 tare = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+tare = str(tare)[1:-1] # Removes square brackets from list converted to str
 
 # Data collection variables
 trials = 0
@@ -137,7 +138,7 @@ def writeFileHeader():
         file.write('Number of Trials: ,' + trials + '\n')
         file.write('Length of Trials [sec]:, ' + totalTime + '\n')
         file.write('Sample rate [#/sec]:, ' + sample_rate + '\n')
-        file.write('Sensor offset:,' + str(tare))
+        file.write('Sensor offset:,' + tare)
         file.write('\n')
         file.close()
 
