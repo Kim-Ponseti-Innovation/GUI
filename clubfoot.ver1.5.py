@@ -355,7 +355,7 @@ def datacollection():
 
             trialLabel.config(text = trials_list[trialNumber - 1] + " of " + str(numberTrialEntry))
             file = open(FILENAME,"a")
-            file.write('\n TRIAL'+ str(trialNumber)+'\n')
+            file.write('\nTRIAL' + str(trialNumber) + '\n')
             file.close()
             window.update_idletasks() #refreshing loop each time
             window.update()
