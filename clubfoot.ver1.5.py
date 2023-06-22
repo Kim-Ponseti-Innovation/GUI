@@ -111,7 +111,6 @@ def receiving(ser_ard, ser_lc):
     while True:
         buffer_string_ard = buffer_string_ard + ser_ard.read(ser_ard.inWaiting()).decode(errors = "replace")
         buffer_string_lc = buffer_string_lc + ser_lc.read(ser_lc.inWaiting()).decode(errors = "replace")
-        
         if ('\n' in buffer_string_ard) and ('\n' in buffer_string_lc):
             lines_ard = buffer_string_ard.split('\n') # Guaranteed to have at least 2 entries
             lines_lc = buffer_string_lc.split('\n') # Guaranteed to have at least 2 entries
