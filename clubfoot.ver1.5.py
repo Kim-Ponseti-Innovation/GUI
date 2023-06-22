@@ -1,9 +1,7 @@
 import tkinter as tk
 from datetime import date
-import random
 import time
 import sys
-from datetime import datetime
 from tkinter.filedialog import asksaveasfile
 from threading import Thread
 from serial import *
@@ -216,7 +214,7 @@ def creatingscframe():
     labelimg.grid(row=7, column=5)
 
     for idx, text in enumerate(sclabels): # Looping through labels in SC
-        number = 0 # Generating random # just for draft
+        number = 0
         frame = tk.Frame(
             master=scframe,
             relief=tk.RAISED,
