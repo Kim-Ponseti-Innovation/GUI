@@ -7,8 +7,8 @@ from threading import Thread
 from serial import *
 
 # Defines Serial Ports
-port_arduino = 'COM3' 
-port_loadcell = 'COM7'
+port_arduino = 'COM 3' #Windows COM 3 
+port_loadcell = 'COM 7' #Windows COM 7
 
 # Serial data from singletact is ordered by addresses.
 # This variable maps the output from the single tact to the physical locations
@@ -118,6 +118,7 @@ def receiving(ser_ard, ser_lc):
             
             last_received_buffer =   last_received_lc + "," + last_received_ard
             last_received = last_received_buffer  
+            print(last_received)
             buffer_string_lc = lines_lc[-1]    
 
 
@@ -263,6 +264,7 @@ def creatingscframe():
         number_list = last_received.split(",") # Creates a list of number from csv line
         del number_list[0] # Deletes the leading 0 from the loadcell
         for idx in range(14):
+            print(number_list)
             sensorValue = float(number_list[map_sensors[idx]]) - tare[idx]
             addSpace = 5 - len(str(sensorValue))
             label[idx].config(text = " "*addSpace + str(sensorValue))
