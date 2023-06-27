@@ -71,6 +71,9 @@ last_received = ''
 tare = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 tare = str(tare)[1:-1] # Removes square brackets from list converted to str
 
+def exit_command():
+    window.destroy()
+
 # Data collection variables
 trials = 0
 totalTime = 0
@@ -85,14 +88,34 @@ def serialSetup():
 
     Returns: lcPort and arduinoPort
     '''
+    while True:
+        try:
+            Serial(port_loadcell, 9600)
+        except SerialException:
+            print("test")
+            check_load_cell("Load Cell")
+            continue
+        else:
+            break
+            
+    while True:
+        try:
+            Serial(port_arduino, 57600)
+        except SerialException:
+            check_load_cell("Arduino")
+            continue
+        else:
+            break
+    
     # Loads the Load Cell Serial port
     lcPort = Serial(port_loadcell, 9600)
+    # Loads Arduino Serial port
+    arduinoPort = Serial(port_arduino, 57600)
+
     lcPort.write(bytes('CD A\r','utf-8'))
     lcPort.write(bytes('CD R\r','utf-8'))
     lcPort.write(bytes('QS\r','utf-8'))
-
-    # Loads Arduino Serial port
-    arduinoPort = Serial(port_arduino, 57600)
+    
     return lcPort, arduinoPort
 
 # Get sensor data at this moment. 
@@ -140,6 +163,8 @@ def writeFileHeader():
         file.write('\n')
         file.close()
 
+def check_load_cell(input_text):
+    tk.messagebox.showerror(title="Error", message=f"Check if {input_text} is plugged in.")
 
 def frame1():
     '''Initalizes patient info window.'''
@@ -191,7 +216,6 @@ def frame1():
     btn_save = tk.Button(frm_form, text = "Save and Go To Sensor Calibration", command = leave, padx= 5, pady= 15) # Creating button
     btn_save.grid(row = 7, columnspan = 2) # Placing button beneath all other elements
         
-
 
 def creatingscframe():
     '''Initalizes Sensor Calibration Window'''
@@ -389,10 +413,6 @@ def datacollection():
         
         elapsed_label = tk.Label(master = time_frame, text = "0 sec", width = 20, padx = 10, pady = 10, bd = 3)
         elapsed_label.grid(column = 0 , row = 6)
-        
-    def exit_command():
-        window.destroy()
-    
 
     dataframe = tk.Frame(window, relief = tk.RAISED, borderwidth = 7) # Master frame for dc
     
@@ -445,5 +465,6 @@ lc, ard = serialSetup()
 Thread(target=receiving, args=(ard,lc,)).start() # Start reading from serial.
 
 frame1() # Calling first function/frame
+exit_command()
 window.mainloop() # Finishing loop
 sys.exit()
