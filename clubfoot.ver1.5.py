@@ -6,9 +6,14 @@ from tkinter.filedialog import asksaveasfile
 from threading import Thread
 from serial import *
 
+
 # Defines Serial Ports
-port_arduino = '/dev/cu.usbmodem142301' #Windows COM 3 
-port_loadcell = '/dev/cu.usbserial-FTDCYJIY' #Windows COM 7
+if sys.platform == 'darwin':
+    port_arduino = '/dev/cu.usbmodem142301' 
+    port_loadcell = '/dev/cu.usbserial-FTDCYJIY' 
+else:
+    port_arduino = 'COM 3' 
+    port_loadcell = 'COM 4' 
 
 # Serial data from singletact is ordered by addresses.
 # This variable maps the output from the single tact to the physical locations
@@ -96,7 +101,7 @@ def serialSetup():
 
     while True:
         try:
-            Serial(port_arduino, 57600)
+            Serial(port_arduino, 115200)
         except SerialException:
             error_box("Check if the Audio Cables are plugged in.")
             continue
@@ -176,7 +181,7 @@ def frame1():
     # Create Demographic info area
     pi_entries.clear() # Ensuring pi_entries is clear so data doesn't get overwritten if frame is run through again
     for idx, text in enumerate(labels): # Loop through label list
-        label = tk.Label(master=frm_form, text=text) # Creating labels using text from the list, labels
+        label = tk.Label(master=frm_form, text=text) # Creating labels using text from the list, labels  
         entry = tk.Entry(master=frm_form, width=50) # Creating entries for each label
         label.grid(row=idx + 1, column = 0, sticky = 'w', padx = 10, pady = 15) # Putting each label in grid to the west with padding for space 
         entry.grid(row=idx + 1, column = 1, sticky = 'w', padx =10, pady = 15) # Putting each entry one column to the right of label in grid to the west with padding for space
@@ -285,9 +290,9 @@ def creatingscframe():
             try:
                 number_list = last_received.split(",") # Creates a list of number from csv line
                 del number_list[0] # Deletes the leading 0 from the loadcell
-                number_list[map_sensors[14]]
+                number_list[map_sensors[13]]
             except:
-                error_box("Please restart the program and check wiring.")
+                error_box("Please check wiring.")
                 continue
             else:
                 break
