@@ -7,8 +7,8 @@ from threading import Thread
 from serial import *
 
 # Defines Serial Ports
-port_arduino = 'COM 3' #Windows COM 3 
-port_loadcell = 'COM 7' #Windows COM 7
+port_arduino = '/dev/cu.usbmodem142301' #Windows COM 3 
+port_loadcell = '/dev/cu.usbserial-FTDCYJIY' #Windows COM 7
 
 # Serial data from singletact is ordered by addresses.
 # This variable maps the output from the single tact to the physical locations
@@ -69,10 +69,6 @@ window.geometry("800x480")
 FILENAME = ''
 last_received = ''
 tare = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-tare = str(tare)[1:-1] # Removes square brackets from list converted to str
-
-def exit_command():
-    window.destroy()
 
 # Data collection variables
 trials = 0
@@ -88,35 +84,39 @@ def serialSetup():
 
     Returns: lcPort and arduinoPort
     '''
+    # Checks to make sure devices are connected
     while True:
         try:
             Serial(port_loadcell, 9600)
         except SerialException:
-            print("test")
-            check_load_cell("Load Cell")
+            error_box("Check if the Load Cell is plugged in.")
             continue
         else:
             break
-            
+
     while True:
         try:
             Serial(port_arduino, 57600)
         except SerialException:
-            check_load_cell("Arduino")
+            error_box("Check if the Audio Cables are plugged in.")
             continue
         else:
             break
-    
+
     # Loads the Load Cell Serial port
     lcPort = Serial(port_loadcell, 9600)
-    # Loads Arduino Serial port
-    arduinoPort = Serial(port_arduino, 57600)
-
     lcPort.write(bytes('CD A\r','utf-8'))
     lcPort.write(bytes('CD R\r','utf-8'))
     lcPort.write(bytes('QS\r','utf-8'))
-    
+
+    # Loads Arduino Serial port
+    arduinoPort = Serial(port_arduino, 115200)
     return lcPort, arduinoPort
+
+
+def error_box(input_text):
+    tk.messagebox.showerror(title="Error", message=input_text)
+
 
 # Get sensor data at this moment. 
 def receiving(ser_ard, ser_lc):
@@ -132,6 +132,7 @@ def receiving(ser_ard, ser_lc):
     while True:
         buffer_string_ard = buffer_string_ard + ser_ard.read(ser_ard.inWaiting()).decode(errors = "replace")
         buffer_string_lc = buffer_string_lc + ser_lc.read(ser_lc.inWaiting()).decode(errors = "replace")
+        
         if ('\n' in buffer_string_ard) and ('\n' in buffer_string_lc):
             lines_ard = buffer_string_ard.split('\n') # Guaranteed to have at least 2 entries
             lines_lc = buffer_string_lc.split('\n') # Guaranteed to have at least 2 entries
@@ -141,7 +142,6 @@ def receiving(ser_ard, ser_lc):
             
             last_received_buffer =   last_received_lc + "," + last_received_ard
             last_received = last_received_buffer  
-            print(last_received)
             buffer_string_lc = lines_lc[-1]    
 
 
@@ -159,12 +159,10 @@ def writeFileHeader():
         file.write('Number of Trials: ,' + trials + '\n')
         file.write('Length of Trials [sec]:, ' + totalTime + '\n')
         file.write('Sample rate [#/sec]:, ' + sample_rate + '\n')
-        file.write('Sensor offset:,' + tare)
+        file.write('Sensor offset:,' + str(tare[1:-1]))
         file.write('\n')
         file.close()
 
-def check_load_cell(input_text):
-    tk.messagebox.showerror(title="Error", message=f"Check if {input_text} is plugged in.")
 
 def frame1():
     '''Initalizes patient info window.'''
@@ -217,6 +215,7 @@ def frame1():
     btn_save.grid(row = 7, columnspan = 2) # Placing button beneath all other elements
         
 
+
 def creatingscframe():
     '''Initalizes Sensor Calibration Window'''
     global last_received
@@ -239,7 +238,7 @@ def creatingscframe():
     labelimg.grid(row=7, column=5)
 
     for idx, text in enumerate(sclabels): # Looping through labels in SC
-        number = 0
+        number = 0 # Generating random # just for draft
         frame = tk.Frame(
             master=scframe,
             relief=tk.RAISED,
@@ -281,19 +280,32 @@ def creatingscframe():
         return color
         
 
+    def update_test():
+        while True:
+            try:
+                number_list = last_received.split(",") # Creates a list of number from csv line
+                del number_list[0] # Deletes the leading 0 from the loadcell
+                number_list[map_sensors[14]]
+            except:
+                error_box("Please restart the program and check wiring.")
+                continue
+            else:
+                break
+
+
     def update():
         '''
         Updates window with most recent values.
         '''
         number_list = last_received.split(",") # Creates a list of number from csv line
         del number_list[0] # Deletes the leading 0 from the loadcell
+
         for idx in range(14):
-            print(number_list)
             sensorValue = float(number_list[map_sensors[idx]]) - tare[idx]
             addSpace = 5 - len(str(sensorValue))
-            label[idx].config(text = " "*addSpace + str(sensorValue))
-            label[idx].config(font = "Courier", bg = backColor(sensorValue,idx))
-        window.after(1000,update)
+            label[idx].config(text = " " * addSpace + str(sensorValue))
+            label[idx].config(font = "Courier", bg = backColor(sensorValue, idx))
+        window.after(1000, update)
 
 
     def goback():
@@ -332,12 +344,13 @@ def creatingscframe():
 
 
     # Defines Buttons
-    scframe_title = tk.Button(master = scframe, text = "Zero Sensor", command = calibrate,pady = 10, width = 20) # Titling frame
+    scframe_title = tk.Button(master = scframe, text = "Zero Sensor", command = calibrate, pady = 10, width = 20) # Titling frame
     scframe_title.grid(row = 0)   
     btn_return = tk.Button(scframe, text = "Back", command = goback, padx=5, pady=10) # Creating button
     btn_return.grid(row = 10, columnspan = 2) # Placing button beneath all other elements
     btn_goto = tk.Button(scframe, text = "Go To", command = goto, padx=5, pady=10) # Creating button
     btn_goto.grid(row = 10, column = 5) # Placing button beneath all other elements
+    update_test()
     update()
                    
 def datacollection():
@@ -378,7 +391,7 @@ def datacollection():
 
             trialLabel.config(text = trials_list[trialNumber - 1] + " of " + str(numberTrialEntry))
             file = open(FILENAME,"a")
-            file.write('\nTRIAL' + str(trialNumber) + '\n')
+            file.write('\nTRIAL'+ str(trialNumber)+'\n')
             file.close()
             window.update_idletasks() #refreshing loop each time
             window.update()
@@ -413,6 +426,10 @@ def datacollection():
         
         elapsed_label = tk.Label(master = time_frame, text = "0 sec", width = 20, padx = 10, pady = 10, bd = 3)
         elapsed_label.grid(column = 0 , row = 6)
+        
+    def exit_command():
+        window.destroy()
+    
 
     dataframe = tk.Frame(window, relief = tk.RAISED, borderwidth = 7) # Master frame for dc
     
@@ -465,6 +482,5 @@ lc, ard = serialSetup()
 Thread(target=receiving, args=(ard,lc,)).start() # Start reading from serial.
 
 frame1() # Calling first function/frame
-exit_command()
 window.mainloop() # Finishing loop
 sys.exit()
