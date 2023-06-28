@@ -1,4 +1,6 @@
 import tkinter as tk
+from tkinter import ttk
+from tkcalendar import DateEntry
 from datetime import date
 import time
 import sys
@@ -29,11 +31,18 @@ sensor_red = [value * 0.95 for value in sensor_limit]
 labels = [ # Prompts for user information
     "Last Name:",
     "First Initial:",
-    "Date of Birth (mm/dd/yyyy):"
+    "Date of Birth (mm/dd/yyyy):",
+    "Weight:",
+    "Height:",
+    "Abduction Angle",
+    "Hip Width:",
+    "Gender:",
+    "Dimeglio score:",
+    "Lateral:"
     ] 
 
 pi_entries = [] # Creating empty list for entries in Patient Info
-pi_data = ['','','',''] # Creating empty list for data in Patient Info
+pi_data = ['' for _ in range(11)] # Creating empty list for data in Patient Info
 dc_entries = []
 sclabels = [ # Labels for sensors in Sensor Calibration
     "Fx",
@@ -193,9 +202,27 @@ def frame1():
     pi_entries.clear() # Ensuring pi_entries is clear so data doesn't get overwritten if frame is run through again
     for idx, text in enumerate(labels): # Loop through label list
         label = tk.Label(master=frm_form, text=text) # Creating labels using text from the list, labels  
-        entry = tk.Entry(master=frm_form, width=50) # Creating entries for each label
-        label.grid(row=idx + 1, column = 0, sticky = 'w', padx = 10, pady = 15) # Putting each label in grid to the west with padding for space 
-        entry.grid(row=idx + 1, column = 1, sticky = 'w', padx =10, pady = 15) # Putting each entry one column to the right of label in grid to the west with padding for space
+        if idx < 2:
+            entry = tk.Entry(master=frm_form, width=50) # Creating entries for each label
+        elif idx == 2:
+            entry = DateEntry(master=frm_form, selectmode="day", year=2020, month=5, day=22)
+        elif idx >= 2 and idx < 7:
+            entry = tk.Entry(master=frm_form, width=50) # Creating entries for each label
+        elif idx == 7:
+            entry = ttk.Combobox(master=frm_form, values=["M", "F"]) 
+        elif idx == 8:
+            entry = ttk.Combobox(master=frm_form, values=[str(num) for num in range(21)])
+        elif idx == 9:
+            entry = ttk.Combobox(master=frm_form, values=["Unilateral Left", "Unilateral Right", "Bilateral"])
+        else:
+            continue
+
+        if idx < 3:    
+            label.grid(row=idx+1, column = 0, sticky = 'w', padx = 10, pady = 15) # Putting each label in grid to the west with padding for space 
+            entry.grid(row=idx+1, column = 1, sticky = 'w', padx =10, pady = 15) # Putting each entry one column to the right of label in grid to the west with padding for space
+        else:
+            label.grid(row=idx-3, column = 3, sticky = 'w', padx = 10, pady = 15) # Putting each label in grid to the west with padding for space 
+            entry.grid(row=idx-3, column = 4, sticky = 'w', padx =10, pady = 15) # Putting each entry one column to the right of label in grid to the west with padding for space
         pi_entries.append(entry) # Adding each entry to pi_entries list
         
     # Create Notes area
@@ -209,11 +236,11 @@ def frame1():
     def leave():
         '''To leave pi frame.'''
         global FILENAME
-         
-        for i in range (3): # Looping through 3 entries
+        
+        for i in range (10): # Looping through 3 entries
             entry_str = pi_entries[i].get() # Getting each entry from the pi_entries list as a string
             pi_data[i] = entry_str # Appending each entry into pi_data list    
-        pi_data[3] = (pi_entries[3]).get("1.0", "end-1c")# Appending text into data list
+        pi_data[10] = (pi_entries[10]).get("1.0",'end-1c')# Appending text into data list
         if (pi_data[0] == '' or pi_data[1] == ''):
             error_msg = tk.Label(master = frm_form, text = "Last Name and First Initial are Required.", bg = "red")
             error_msg.grid(row = 15)
