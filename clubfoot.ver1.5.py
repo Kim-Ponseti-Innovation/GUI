@@ -3,7 +3,7 @@ from datetime import date
 import time
 import sys
 from tkinter.filedialog import asksaveasfile
-from threading import Thread
+import threading
 from serial import *
 
 
@@ -14,6 +14,9 @@ if sys.platform == 'darwin':
 else:
     port_arduino = 'COM 3' 
     port_loadcell = 'COM 4' 
+
+# Creates event to stop threading
+stop_thread = threading.Event()
 
 # Serial data from singletact is ordered by addresses.
 # This variable maps the output from the single tact to the physical locations
@@ -119,6 +122,11 @@ def serialSetup():
     return lcPort, arduinoPort
 
 
+def major_error(input_text):
+    error_box = tk.messagebox.showerror(title="Error", message=input_text)
+    if error_box == "ok":
+        window.destroy()
+
 def error_box(input_text):
     tk.messagebox.showerror(title="Error", message=input_text)
 
@@ -142,13 +150,16 @@ def receiving(ser_ard, ser_lc):
             lines_ard = buffer_string_ard.split('\n') # Guaranteed to have at least 2 entries
             lines_lc = buffer_string_lc.split('\n') # Guaranteed to have at least 2 entries
             last_received_ard = lines_ard[-2]
+            last_received_ard = last_received_ard.strip('\r')
             last_received_lc = lines_lc[-2].replace(' ','')
             last_received_lc = last_received_lc.strip('\r')
             
             last_received_buffer =   last_received_lc + "," + last_received_ard
             last_received = last_received_buffer  
-            buffer_string_lc = lines_lc[-1]    
+            buffer_string_lc = lines_lc[-1] # Why buffer?    
 
+        if stop_thread.is_set():
+            break
 
 def writeFileHeader():
     '''
@@ -225,7 +236,6 @@ def creatingscframe():
     '''Initalizes Sensor Calibration Window'''
     global last_received
 
-    values = []
     label = []
     scframe = tk.Frame(window, relief=tk.RAISED, borderwidth = 7) # Master sensor calibration frame
     scframe.pack(fill = "both", expand = True)
@@ -234,11 +244,11 @@ def creatingscframe():
     scframe_label.grid(row = 1)
     
 
-    window.imag1 = tk.PhotoImage(file="leftfoot.png")
+    window.imag1 = tk.PhotoImage(file="Images/leftfoot.png")
     labelimg = tk.Label(scframe, image = window.imag1)
     labelimg.grid(row=7, column=2)
     
-    window.imag2 = tk.PhotoImage(file="rightfoot.png")
+    window.imag2 = tk.PhotoImage(file="Images/rightfoot.png")
     labelimg = tk.Label(scframe, image = window.imag2)
     labelimg.grid(row=7, column=5)
 
@@ -292,8 +302,9 @@ def creatingscframe():
                 del number_list[0] # Deletes the leading 0 from the loadcell
                 number_list[map_sensors[13]]
             except:
-                error_box("Please check wiring.")
-                continue
+                major_error("Please restart the program and check Ardunio wiring.")
+                stop_thread.set()
+                sys.exit()
             else:
                 break
 
@@ -394,7 +405,7 @@ def datacollection():
             global trialNumber
             trialNumber += 1
 
-            trialLabel.config(text = trials_list[trialNumber - 1] + " of " + str(numberTrialEntry))
+            trialLabel.config(text = f"Trial {trialNumber}" + " of " + str(numberTrialEntry))
             file = open(FILENAME,"a")
             file.write('\nTRIAL'+ str(trialNumber)+'\n')
             file.close()
@@ -483,9 +494,11 @@ def datareview():
     datareview_title.grid()
     
     
+# Starts Threading
 lc, ard = serialSetup()
-Thread(target=receiving, args=(ard,lc,)).start() # Start reading from serial.
+thread_var = threading.Thread(target=receiving, args=(serialSetup()))
+thread_var.start() # Start reading from serial.
 
 frame1() # Calling first function/frame
 window.mainloop() # Finishing loop
-sys.exit()
+stop_thread.set() # Stops threading and ends program
