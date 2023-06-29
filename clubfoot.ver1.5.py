@@ -82,7 +82,7 @@ sampleRateEntry = 0
 # Defining Window
 window = tk.Tk() # Creating window
 window.title("Clubfoot Data Collection") # Titling window
-window.geometry("800x480")
+window.geometry("1000x600")
 FILENAME = ''
 last_received = ''
 tare = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -176,7 +176,7 @@ def writeFileHeader():
     '''
     if pi_data != []:
         file = open(FILENAME,"w")
-        file.write('Last Name, First Initial, DOB, Notes \n')
+        file.write('Last Name, First Initial, DOB, Weight, Height, Abduction Angle, Hip Width, Gender, Dimeglio score, Lateral, Notes \n')
         for entry in pi_data:
             file.write(entry)
             file.write(',')
@@ -184,7 +184,8 @@ def writeFileHeader():
         file.write('Number of Trials: ,' + trials + '\n')
         file.write('Length of Trials [sec]:, ' + totalTime + '\n')
         file.write('Sample rate [#/sec]:, ' + sample_rate + '\n')
-        file.write('Sensor offset:,' + str(tare[1:-1]))
+        sensor_offset = str(tare)
+        file.write('Sensor offset:,' + sensor_offset[1:-1])
         file.write('\n')
         file.close()
 
@@ -203,11 +204,11 @@ def frame1():
     for idx, text in enumerate(labels): # Loop through label list
         label = tk.Label(master=frm_form, text=text) # Creating labels using text from the list, labels  
         if idx < 2:
-            entry = tk.Entry(master=frm_form, width=50) # Creating entries for each label
+            entry = tk.Entry(master=frm_form, width=20) # Creating entries for each label
         elif idx == 2:
             entry = DateEntry(master=frm_form, selectmode="day", year=2020, month=5, day=22)
         elif idx >= 2 and idx < 7:
-            entry = tk.Entry(master=frm_form, width=50) # Creating entries for each label
+            entry = tk.Entry(master=frm_form, width=20) # Creating entries for each label
         elif idx == 7:
             entry = ttk.Combobox(master=frm_form, values=["M", "F"]) 
         elif idx == 8:
@@ -228,7 +229,7 @@ def frame1():
     # Create Notes area
     notelabel = tk.Label(master=frm_form, text = "Notes:") # Creating prompt for text box
     notelabel.grid(row=4, column = 0, sticky = 'w', padx = 10, pady = 15) # Putting prompt in grid below the labels and entries  
-    notes = tk.Text(master = frm_form, width = 108, height = 9, bg = "mistyrose", padx = 10) # Creating text box
+    notes = tk.Text(master = frm_form, width = 70, height = 9, bg = "mistyrose", padx = 10) # Creating text box
     notes.grid(row = 5, columnspan = 2) # Putting text in grid below all previous elements
     pi_entries.append(notes) # Adding text box to pi_entries list (which will be used to convert and write info to a file)
 
@@ -241,12 +242,16 @@ def frame1():
             entry_str = pi_entries[i].get() # Getting each entry from the pi_entries list as a string
             pi_data[i] = entry_str # Appending each entry into pi_data list    
         pi_data[10] = (pi_entries[10]).get("1.0",'end-1c')# Appending text into data list
+
         if (pi_data[0] == '' or pi_data[1] == ''):
             error_msg = tk.Label(master = frm_form, text = "Last Name and First Initial are Required.", bg = "red")
             error_msg.grid(row = 15)
+        elif (pi_data[0].isalpha() == False or pi_data[1].isalpha() == False):
+            error_msg = tk.Label(master = frm_form, text = "No special characters (#, /, *)", bg = "red")
+            error_msg.grid(row = 15)
         else:
             today = date.today()
-            FILENAME = pi_data[0] + '_' + pi_data[1][0] + '_' + (today.strftime("%d_%m_%Y")) + '.csv'
+            FILENAME = 'data/' + pi_data[0] + '_' + pi_data[1][0] + '_' + (today.strftime("%d_%m_%Y")) + '.csv'
             # Hid all elements of frame from view
             for widgets in frm_form.winfo_children(): # Hide all widgets in frame
                 widgets.destroy()
@@ -391,11 +396,11 @@ def creatingscframe():
     scframe_title.grid(row = 0)   
     btn_return = tk.Button(scframe, text = "Back", command = goback, padx=5, pady=10) # Creating button
     btn_return.grid(row = 10, columnspan = 2) # Placing button beneath all other elements
-    btn_goto = tk.Button(scframe, text = "Go To", command = goto, padx=5, pady=10) # Creating button
+    btn_goto = tk.Button(scframe, text = "Collect Data", command = goto, padx=5, pady=10) # Creating button
     btn_goto.grid(row = 10, column = 5) # Placing button beneath all other elements
     update_test()
     update()
-                   
+
 def datacollection():
     '''
     Saves data from serial ports.
@@ -482,7 +487,7 @@ def datacollection():
     
     as_label = tk.Label(master=saveframe, text="Save As: ") # Creating label to name file (save as)
     as_entry = tk.Entry(master=saveframe, width=20) # Creating entries for label
-    as_entry.insert(0,FILENAME)
+    as_entry.insert(0,FILENAME[5:])
 
     dataframe.pack(fill = "both", expand = True)
     dataframe_title.grid(padx = 5)
@@ -490,16 +495,30 @@ def datacollection():
     as_label.grid(sticky = 'w', padx = 10, pady = 5) # Putting the label in grid to the west with padding for space 
     as_entry.grid(padx = 10, pady = 5) # Putting entry below the label
     
-    patinfoframe = tk.Frame(dataframe, relief = tk.RAISED, borderwidth = 5) # Frame for info from PI
+    patinfoframe = tk.Frame(dataframe, relief = tk.RAISED, borderwidth = 10) # Frame for info from PI
     patinfoframe.grid(row = 0, column = 2, rowspan = 3, ipadx = 50, ipady= 15, padx= 5, pady = 5)
     patinfotitle = tk.Button(patinfoframe, text = "Patient Information", padx =10, pady = 10) # Fisplaying info from PI
     patinfotitle.grid()
-    patname_label = tk.Label(patinfoframe, text = (pi_data[1][0] + "." + pi_data[0])) # Giving firstinitial.lastname from PI
-    patname_label.grid(padx =10, pady = 10, sticky = 'w')
+    patname_label = tk.Label(patinfoframe, text = ("Name: " + pi_data[1][0] + "." + pi_data[0])) # Giving firstinitial.lastname from PI
+    patname_label.grid(padx = 10, pady = 10, sticky = 'w')
     dob_label = tk.Label(patinfoframe, text = ("DOB: " + pi_data[2])) # Date of birth from PI
     dob_label.grid(padx =10, pady = 10, sticky = 'w')
-    notes_label = tk.Label(patinfoframe, text = ("Notes: " + pi_data[3])) #Notes from PI
+    weight_label = tk.Label(patinfoframe, text = ("Weight: " + pi_data[3])) # Date of birth from PI
+    weight_label.grid(padx =10, pady = 10, sticky = 'w')
+    height_label = tk.Label(patinfoframe, text = ("Height: " + pi_data[4])) # Date of birth from PI
+    height_label.grid(padx =10, pady = 10, sticky = 'w')
+    notes_label = tk.Label(patinfoframe, text = ("Notes: " + pi_data[10])) #Notes from PI
     notes_label.grid(padx =10, pady = 10, sticky = 'w')
+    aa_label = tk.Label(patinfoframe, text = ("Abduction Angle: " + pi_data[5])) #Notes from PI
+    aa_label.grid(row=1, column=2, padx =10, pady = 10, sticky = 'w')
+    hw_label = tk.Label(patinfoframe, text = ("Hip Width: " + pi_data[6])) #Notes from PI
+    hw_label.grid(row=2, column=2, padx =10, pady = 10, sticky = 'w')
+    gender_label = tk.Label(patinfoframe, text = ("Gender: " + pi_data[7])) #Notes from PI
+    gender_label.grid(row=3, column=2, padx =10, pady = 10, sticky = 'w')
+    ds_label = tk.Label(patinfoframe, text = ("Dimeglio score: " + pi_data[8])) #Notes from PI
+    ds_label.grid(row=4, column=2, padx =10, pady = 10, sticky = 'w')
+    lateral_label = tk.Label(patinfoframe, text = ("Lateral: " + pi_data[9])) #Notes from PI
+    lateral_label.grid(row=5, column=2, padx =10, pady = 10, sticky = 'w')
     
     for idx, text in enumerate(dclabels): # Loop through label list
         dclabel = tk.Label(master=dataframe, text=text) # Creating labels using text from the list, labels
@@ -508,19 +527,27 @@ def datacollection():
         dcentry.grid(row=idx + 1, column = 1, sticky = 'w', padx = 5, pady = 10) # Putting each entry one column to the right of label in grid to the west with padding for space
         dc_entries.append(dcentry) # Adding each entry to pi_entries list
     
-    collect_button = tk.Button(master = dataframe, text = "COLLECT DATA", command = collect, padx = 10, pady = 10, width = 10)
+    def check_if_int():
+        while True:
+                try:
+                    int(dc_entries[0].get())
+                    int(dc_entries[1].get())
+                    int(dc_entries[2].get())
+                except ValueError:
+                    error_msg = tk.Label(master = dataframe, text = "Please enter only integers.", bg = "red")
+                    error_msg.grid(row = 15)
+                    break
+                else:
+                    collect()
+                    break
+
+    collect_button = tk.Button(master = dataframe, text = "COLLECT DATA", command = check_if_int, padx = 10, pady = 10, width = 10)
     collect_button.grid(row = 4, column = 0)
+
     exit_button = tk.Button(master = dataframe, text = "EXIT", command = exit_command, padx = 10, pady = 10, width = 10)
     exit_button.grid(row = 4, column = 1)
     
 
-def datareview():
-    datareview = tk.Frame(window,relief = tk.RAISED, borderwidth = 7) # Master frame for datareview
-    datareview.grid()
-    datareview_title = tk.Button(master = datareview, text = "Data Review", pady = 5, width = 20) # Titling frame
-    datareview_title.grid()
-    
-    
 # Starts Threading
 lc, ard = serialSetup()
 thread_var = threading.Thread(target=receiving, args=(serialSetup()))
