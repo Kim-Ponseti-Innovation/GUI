@@ -9,8 +9,6 @@ from dataprocessing import make_pdf
 import threading
 from serial import *
 
-#edit git hub test
-
 # Defines Serial Ports
 if sys.platform == 'darwin':
     port_arduino = '/dev/cu.usbmodem142301' 
