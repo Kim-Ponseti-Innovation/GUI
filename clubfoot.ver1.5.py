@@ -8,6 +8,7 @@ from tkinter.filedialog import asksaveasfile
 import threading
 from serial import *
 
+#edit git hub test
 
 # Defines Serial Ports
 if sys.platform == 'darwin':
