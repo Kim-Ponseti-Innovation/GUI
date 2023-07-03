@@ -5,6 +5,7 @@ from datetime import date
 import time
 import sys
 from tkinter.filedialog import asksaveasfile
+from dataprocessing import make_pdf
 import threading
 from serial import *
 
@@ -34,8 +35,8 @@ labels = [ # Prompts for user information
     "Date of Birth (mm/dd/yyyy):",
     "Weight (kg):",
     "Height (cm):",
-    "Abduction Angle",
-    "Hip Width:",
+    "Abduction Angle (°):",
+    "Hip Width (cm):",
     "Gender:",
     "Dimeglio score:",
     "Lateral:"
@@ -85,7 +86,7 @@ window.title("Clubfoot Data Collection") # Titling window
 window.geometry("1000x600")
 FILENAME = ''
 last_received = ''
-tare = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+tare = [0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 
 # Data collection variables
 trials = 0
@@ -159,7 +160,7 @@ def receiving(ser_ard, ser_lc):
             lines_ard = buffer_string_ard.split('\n') # Guaranteed to have at least 2 entries
             lines_lc = buffer_string_lc.split('\n') # Guaranteed to have at least 2 entries
             last_received_ard = lines_ard[-2]
-            last_received_ard = last_received_ard.strip('\r')
+            #last_received_ard = last_received_ard.strip('\r')
             last_received_lc = lines_lc[-2].replace(' ','')
             last_received_lc = last_received_lc.strip('\r')
             
@@ -177,16 +178,18 @@ def writeFileHeader():
     '''
     if pi_data != []:
         file = open(FILENAME,"w")
-        file.write('Last Name, First Initial, DOB, Weight, Height, Abduction Angle, Hip Width, Gender, Dimeglio score, Lateral, Notes \n')
+        file.write('Last Name,First Initial,DOB,Weight,Height,Abduction Angle,Hip Width,Gender,Dimeglio Score,Lateral,Notes,,,,,,,,,,,\n')
         for entry in pi_data:
             file.write(entry)
             file.write(',')
+        file.write(',,,,,,,,,,')
         file.write('\n')
-        file.write('Number of Trials: ,' + trials + '\n')
-        file.write('Length of Trials [sec]:, ' + totalTime + '\n')
-        file.write('Sample rate [#/sec]:, ' + sample_rate + '\n')
+        file.write('Number of Trials:,' + trials + ',,,,,,,,,,,,,,,,,,,,' + '\n')
+        file.write('Length of Trials [sec]:, ' + totalTime + ',,,,,,,,,,,,,,,,,,,,'+ '\n')
+        file.write('Sample rate [#/sec]:, ' + sample_rate + ',,,,,,,,,,,,,,,,,,,,' + '\n')
         sensor_offset = str(tare)
         file.write('Sensor offset:,' + sensor_offset[1:-1])
+        file.write(',,,,,,,')
         file.write('\n')
         file.close()
 
@@ -441,7 +444,7 @@ def datacollection():
 
             trialLabel.config(text = f"Trial {trialNumber}" + " of " + str(numberTrialEntry))
             file = open(FILENAME,"a")
-            file.write('\nTRIAL'+ str(trialNumber)+'\n')
+            file.write('\nTRIAL'+ str(trialNumber)+ ',,,,,,,,,,,,,,,,,,,,,' + '\n')
             file.close()
             window.update_idletasks() #refreshing loop each time
             window.update()
@@ -454,7 +457,7 @@ def datacollection():
                 window.update()
                 elapsedTime = int((time.perf_counter() - (trialStartTime))*(10**3))/(10**3)
                 file = open(FILENAME,"a")
-                file.write(str(elapsedTime) + ',' + last_received )
+                file.write(str(elapsedTime) + ',' + last_received)
                 file.close()
                 elapsed_label.config(text = str(elapsedTime))
                 sampleStartTime = time.perf_counter()
@@ -558,3 +561,4 @@ thread_var.start() # Start reading from serial.
 frame1() # Calling first function/frame
 window.mainloop() # Finishing loop
 stop_thread.set() # Stops threading and ends program
+make_pdf(FILENAME)
