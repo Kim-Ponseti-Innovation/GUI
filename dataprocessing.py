@@ -143,7 +143,7 @@ def make_pdf(PATH_NAME):
   ##### CSV file !!! also make sure you make it a raw string ###
   return_name = PATH_NAME.replace('data/', '')
   return_name = return_name.replace('.csv', '')
-  PATH= 'PDFs' + return_name
+  PATH= 'pdf/' + return_name
   DATA=pd.read_csv(PATH_NAME) #reading in the csv file as a dataframe
 
   '''Establishing variables'''
