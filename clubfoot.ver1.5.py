@@ -188,7 +188,8 @@ def writeFileHeader():
         file.write('Sample rate [#/sec]:, ' + sample_rate + ',,,,,,,,,,,,,,,,,,,,' + '\n')
         sensor_offset = str(tare)
         file.write('Sensor offset:,' + sensor_offset[1:-1])
-        file.write(',,,,,,,')
+        if sensor_offset[1] == 0 and sensor_offset[8] == 0:
+            file.write(',,,,,,,')
         file.write('\n')
         file.close()
 
@@ -395,7 +396,7 @@ def creatingscframe():
 
 
     # Defines Buttons
-    scframe_title = tk.Button(master = scframe, text = "Zero Sensor", command = calibrate, pady = 10, width = 20) # Titling frame
+    scframe_title = tk.Button(master = scframe, text = "Sensor Calibration", command = calibrate, pady = 10, width = 20) # Titling frame
     scframe_title.grid(row = 0)   
     btn_return = tk.Button(scframe, text = "Back", command = goback, padx=5, pady=10) # Creating button
     btn_return.grid(row = 10, columnspan = 2) # Placing button beneath all other elements
@@ -403,6 +404,7 @@ def creatingscframe():
     btn_goto.grid(row = 10, column = 5) # Placing button beneath all other elements
     update_test()
     update()
+    calibrate()
 
 # Needs Help
 def datacollection():

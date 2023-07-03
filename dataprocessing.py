@@ -80,7 +80,9 @@ def make_plot(xx,yy,dict,df_list,trial,path_name, figures): #called in main func
   ytitle=dict[yy]
 
   #creating the figure subtitle
-  subtitle=f'Trial {trial} from {path_name}'
+  return_name = path_name.replace('data/', '')
+  return_name = return_name.replace('.csv', '')
+  subtitle=f'Trial {trial} from {return_name}'
 
   #setting plot parameters
   plt.rcParams["figure.figsize"] = [4.50, 3.50]
