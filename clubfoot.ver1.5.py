@@ -170,6 +170,7 @@ def receiving(ser_ard, ser_lc):
         if stop_thread.is_set():
             break
 
+# Needs Help
 def writeFileHeader():
     '''
     Writes data to a file. 
@@ -189,7 +190,7 @@ def writeFileHeader():
         file.write('\n')
         file.close()
 
-
+# Needs Help
 def frame1():
     '''Initalizes patient info window.'''
     global FILENAME
@@ -263,7 +264,7 @@ def frame1():
     btn_save.grid(row = 7, columnspan = 2) # Placing button beneath all other elements
         
 
-
+# Needs Help
 def creatingscframe():
     '''Initalizes Sensor Calibration Window'''
     global last_received
@@ -401,6 +402,7 @@ def creatingscframe():
     update_test()
     update()
 
+# Needs Help
 def datacollection():
     '''
     Saves data from serial ports.
