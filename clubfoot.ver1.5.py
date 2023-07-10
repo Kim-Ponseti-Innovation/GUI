@@ -14,8 +14,8 @@ if sys.platform == 'darwin':
     port_arduino = '/dev/cu.usbmodem142301' 
     port_loadcell = '/dev/cu.usbserial-FTDCYJIY' 
 else:
-    port_arduino = 'COM 3' 
-    port_loadcell = 'COM 4' 
+    port_arduino = 'COM3' 
+    port_loadcell = 'COM4' 
 
 # Creates event to stop threading
 stop_thread = threading.Event()
@@ -159,7 +159,6 @@ def receiving(ser_ard, ser_lc):
             lines_ard = buffer_string_ard.split('\n') # Guaranteed to have at least 2 entries
             lines_lc = buffer_string_lc.split('\n') # Guaranteed to have at least 2 entries
             last_received_ard = lines_ard[-2]
-            #last_received_ard = last_received_ard.strip('\r')
             last_received_lc = lines_lc[-2].replace(' ','')
             last_received_lc = last_received_lc.strip('\r')
             
@@ -556,7 +555,7 @@ def datacollection():
 
 # Starts Threading
 lc, ard = serialSetup()
-thread_var = threading.Thread(target=receiving, args=(serialSetup()))
+thread_var = threading.Thread(target=receiving, args=(ard, lc))
 thread_var.start() # Start reading from serial.
 
 frame1() # Calling first function/frame
